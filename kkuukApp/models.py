@@ -7,7 +7,7 @@ class Store(models.Model):
     email = models.EmailField(max_length=255)
     call = models.CharField(max_length=20)
     store_name = models.CharField(max_length=255)
-    # pwd = models.CharField(max_length=12)
+    pwd = models.CharField(max_length=12)
     created_at = models.DateTimeField(auto_now_add=True) #날짜와 시간을 갖는 필드
     is_deleted = models.BooleanField(default=False) #데이터 관리할 때 false로 기본값
     # objects = UserManager()
