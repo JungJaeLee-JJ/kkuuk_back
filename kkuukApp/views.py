@@ -1,116 +1,102 @@
-from .models import MemberShip, Store, Client
-from django.http import HttpResponse
+from .models import Store, Client, MemberShip
 from django.db.models import Q
-from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse, JsonResponse
+# from django.views.decorators.csrf import csrf_exempt
+
+# RestFramework
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.http import Http404
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.models import User
+from django.contrib.auth.models import UserManager
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.serializers import AuthTokenSerializer
+from rest_framework import mixins
+from rest_framework import generics
+from rest_framework.authtoken.views import ObtainAuthToken
+
 import json
 
 #response 메세지
 def res_msg(code, msg, data={}) :
-    print(code,msg)
-    return json.dumps({'code':code, 'msg':msg , 'data':data},ensure_ascii=False)
+    return {'code':code, 'msg':msg , 'data':data}
 
-@csrf_exempt
-def DuplicateCheck(request):
-    try:
-        #GET
-        if request.method == 'GET':
-            return HttpResponse(res_msg(400, '잘못된 요청입니다.'),status=200)
-        elif request.method == 'POST':
-            email = request.POST['email']
+class SignUp(APIView):
+    def post(self, request, format=None):
+        try:
+            username = request.data['username']
+            password = request.data['password']
+            call = request.data['call']
+            email = request.data['email']
+            user = Store.objects.create_user(username=username, password=password, email=email, call=call)
+            return JsonResponse(res_msg(200,'회원가입이 완료되었습니다.'))
+        except Exception as e:
+            print(e)
+            return JsonResponse(res_msg(500, e.__str__()))
+
+class DuplicateCheck(APIView):
+    def post(self, request):
+        try:
+            email = request.data['email']
             store = Store.objects.filter(email=email)
             if store.exists():
-                return HttpResponse(res_msg('200', '중복'), status=200)
-            return HttpResponse(res_msg('200', '신규'), status=200)
+                return JsonResponse(res_msg(200, '중복'))
+            return JsonResponse(res_msg(200, '신규'))
+        
+        except Exception as e:
+            return JsonResponse(res_msg(500, e.__str__()))
 
-    except Exception as ex:
-        print(ex)
-        return HttpResponse(res_msg(500, '서버오류'), status=200)
+class LogIn(APIView):
+    def post(self, request):
+        try:
+            user = Store.objects.get(username=request.data['username'])
+            serializer = AuthTokenSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            token, _ = Token.objects.get_or_create(user=user)
+            return JsonResponse(res_msg(200, '로그인에 성공하였습니다.',{'token':token.key}))
+        except Exception as e:
+            print(e)
+            return JsonResponse(res_msg(500, e.__str__()))
 
-# 매장 등록 함수
-@csrf_exempt
-def signup(request):
-    try :
-        if request.method == 'GET' :
-            return HttpResponse(res_msg(400, '잘못된 요청입니다.', ''),status=200)
-        elif request.method == 'POST' :
-            store = Store.objects.create(
-                email = request.POST['email'],
-                call = request.POST['call'],
-                name = request.POST['name'],
-                pwd = request.POST['pwd'],
-        )
-        # store.save()
-        return HttpResponse(res_msg(200,'회원가입이 완료되었습니다.'), status=200)
-    except Exception as ex :
-        print(ex)
-        return HttpResponse(res_msg(500, '서버오류'), status=200)
-
-# 로그인 함수
-@csrf_exempt
-def login(request):
-    try :
-        #GET
-        if request.method == 'GET' :
-            return HttpResponse(res_msg(400, '잘못된 요청입니다.'),status=200)
-        #POST
-        elif request.method == 'POST' :
-            email = request.POST['email']
-            pwd = request.POST['pwd']
-            store = Store.objects.get(email=email)
-            if store.pwd == pwd :
-                return HttpResponse(res_msg('200', '로그인 되었습니다.'), status=200)
-            return HttpResponse(res_msg(400, '비밀번호가 다릅니다.'), status=200)
-    except Exception as ex:
-        print(ex)
-        return HttpResponse(res_msg(500, '서버오류'), status=200)
-
-#고객 등록 함수
-@csrf_exempt
-def addClient(request):
-    try :
-        #Get
-        if request.method == 'GET' :
-            return HttpResponse(res_msg(400, '잘못된 요청입니다.'),status=200)
-        #POST
-        elif request.method == 'POST' :
-            #가게 이메일 가져오기
-            email = request.POST['email']
+class AddClient(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self, request):
+        try:
+            email = request.data['email']
             store_email = Store.objects.get(email=email)
             #고객 이름, 뒷자리 가져오기
-            name = request.POST['name']
-            last_4_digit = request.POST['last_4_digit']
+            name = request.data['name']
+            last_4_digit = request.data['last_4_digit']
             check = Client.objects.filter(Q(name=name) & Q(last_4_digit=last_4_digit))
             if check.exists() : #(중복) 이미 가입된 회원
-                return HttpResponse(res_msg('200', '이미 가입된 고객입니다.'), status=200)
+                return JsonResponse(res_msg(200, '이미 가입된 고객입니다.'))
+            
             # 고객 등록하기
             client = Client.objects.create(
-            name = request.POST['name'],
-            last_4_digit = request.POST['last_4_digit'],
+                name = request.POST['name'],
+                last_4_digit = request.POST['last_4_digit'],
             )
-            # client.save()
+         
             #고객 멤버쉽 생성
-            membership = MemberShip.objects.create(
+            MemberShip.objects.create(
                 store = store_email,
                 client_name = client
             )
-            # membership.save()
-            return HttpResponse(res_msg(200, '고객 등록이 완료 되었습니다.'), status=200)
-    except Exception as ex :
-        print(ex)
-        return HttpResponse(res_msg(500, '서버오류'), status=200)
 
-#고객 조회 함수
-@csrf_exempt
-def getClient(request) :
-    try :
-        #Get
-        if request.method == 'GET' :
-            return HttpResponse(res_msg(400, '잘못된 요청입니다.'),status=200)
-        #POST
-        elif request.method == 'POST' :
-            digit = request.POST['last_4_digit']
+            return JsonResponse(res_msg(200, '고객 등록이 완료 되었습니다.'))
+        except Exception as e:
+            print(e)
+            return JsonResponse(res_msg(500, e.__str__()))
+
+class GetClient(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self, request):
+        try:
+            digit = request.data['last_4_digit']
             clients = Client.objects.filter(last_4_digit = digit)
-            store_email = request.POST['email']
+            store_email = request.data['email']
             store = Store.objects.filter(email = store_email)
             if clients.exists() and store.exists() :
                 data = []
@@ -118,11 +104,11 @@ def getClient(request) :
                     membership = MemberShip.objects.filter(Q(store = store[0]) & Q( client_name = client))
                     if membership.exists():
                         data.append({'name':client.name,'stamp':membership[0].stamp})
-                return HttpResponse(res_msg(200, '조회 완료',data),status=200)
-            return HttpResponse(res_msg(400, '고객 정보가 없습니다.'),status=200)
-    except Exception as ex :
-        print(ex)
-        return HttpResponse(res_msg(500, '서버오류'), status=200)
+                return JsonResponse(res_msg(200, '조회 완료',data))
+            return JsonResponse(res_msg(400, '고객 정보가 없습니다.'))
+        except Exception as e:
+            print(e)
+            return JsonResponse(res_msg(500, e.__str__()))
 
 
 # 고객 도장적립 함수

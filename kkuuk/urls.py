@@ -19,9 +19,9 @@ from kkuukApp import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/signup', views.signup),
-    path('api/login',views.login),
-    path('api/addclient', views.addClient),
-    path('api/getclient', views.getClient),
-    path('api/duplicate',views.DuplicateCheck),
+    path('api/signup', views.SignUp.as_view()),
+    path('api/login',views.LogIn.as_view()),
+    path('api/addclient', views.AddClient.as_view()),
+    path('api/getclient', views.GetClient.as_view()),
+    path('api/duplicate',views.DuplicateCheck.as_view()),
 ]
