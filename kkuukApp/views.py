@@ -5,16 +5,16 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 #response 메세지
-def res_msg(code, msg) :
+def res_msg(code, msg, data={}) :
     print(code,msg)
-    return json.dumps({'code':code, 'msg':msg},ensure_ascii=False)
+    return json.dumps({'code':code, 'msg':msg , 'data':data},ensure_ascii=False)
 
 # 매장 등록 함수
 @csrf_exempt
 def signup(request):
     try :
         if request.method == 'GET' :
-            return HttpResponse(res_msg(400, '잘못된 요청입니다.'),status=200)
+            return HttpResponse(res_msg(400, '잘못된 요청입니다.', ''),status=200)
         elif request.method == 'POST' :
             store = Store.objects.create(
                 email = request.POST['email'],
@@ -58,7 +58,7 @@ def addClient(request):
         elif request.method == 'POST' :
             #가게 이메일 가져오기
             email = request.POST['email']
-            store = Store.objects.get(email=email)
+            store_email = Store.objects.get(email=email)
             #고객 이름, 뒷자리 가져오기
             name = request.POST['name']
             last_4_digit = request.POST['last_4_digit']
@@ -73,7 +73,7 @@ def addClient(request):
             # client.save()
             #고객 멤버쉽 생성
             membership = MemberShip.objects.create(
-                store = store,
+                store = store_email,
                 client_name = client
             )
             # membership.save()
@@ -82,38 +82,30 @@ def addClient(request):
         print(ex)
         return HttpResponse(res_msg(500, '서버오류'), status=200)
 
-# 고객 조회 함수
-# @csrf_exempt
-# def getClient(request) :
-#     try :
-#         #Get
-#         if request.method == 'GET' :
-#             return HttpResponse(res_msg(400, '잘못된 요청입니다.'),status=200)
-#         #POST
-#         elif request.method == 'POST' :
-#             digit = request.POST['last_4_digit']
-#             check = Client.objects.filter(last_4_digit = digit)
-#             #고객 조회에 매장 아이디도 조회하기
-#             if check #조건 몰라서 못씀.. : # 뒷자리가 고객 정보에 있다면
-#                 membership = MemberShip.objects.create(
-#                     #멤버십 생성하기
-#                     store = request.POST['store'],
-#                     client_name = request.POST['client_name'],
-#                     stamp = request.POST['stamp'],
-#                 )
-#                 membership.save()
-#                 return HttpResponse(res_msg(200, '적립되었습니다.'), status=200)
-#             else : #뒷자리가 고객 정보에 없다면
-#                 # 고객 등록하기
-#                 client = Client.objects.create(
-#                 name = request.POST['name'],
-#                 last_4_digit = request.POST['last_4_digit'],
-#                 )
-#                 client.save()
-#                 return HttpResponse(res_msg(200, '고객이 등록되었습니다.'),status=200)
-#     except Exception as ex :
-#         print(ex)
-#         return HttpResponse(res_msg(500, '서버오류'), status=200)
+#고객 조회 함수
+@csrf_exempt
+def getClient(request) :
+    try :
+        #Get
+        if request.method == 'GET' :
+            return HttpResponse(res_msg(400, '잘못된 요청입니다.'),status=200)
+        #POST
+        elif request.method == 'POST' :
+            digit = request.POST['last_4_digit']
+            clients = Client.objects.filter(last_4_digit = digit)
+            store_email = request.POST['email']
+            store = Store.objects.filter(email = store_email)
+            if clients.exists() and store.exists() :
+                data = []
+                for client in clients:
+                    membership = MemberShip.objects.filter(Q(store = store[0]) & Q( client_name = client))
+                    if membership.exists():
+                        data.append({'name':client.name,'stamp':membership[0].stamp})
+                return HttpResponse(res_msg(200, '조회 완료',data),status=200)
+            return HttpResponse(res_msg(400, '고객 정보가 없습니다.'),status=200)
+    except Exception as ex :
+        print(ex)
+        return HttpResponse(res_msg(500, '서버오류'), status=200)
 
 
 # 고객 도장적립 함수

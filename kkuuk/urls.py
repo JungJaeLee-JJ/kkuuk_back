@@ -22,5 +22,5 @@ urlpatterns = [
     path('api/signup', views.signup),
     path('api/login',views.login),
     path('api/addclient', views.addClient),
-    #path('kkuuk/getclient', views.getClient),
+    path('api/getclient', views.getClient),
 ]
