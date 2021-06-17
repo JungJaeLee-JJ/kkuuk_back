@@ -54,7 +54,9 @@ class DuplicateCheck(APIView):
 class LogIn(APIView):
     def post(self, request):
         try:
-            user = Store.objects.get(username=request.data['username'])
+            user = Store.objects.filter(email=request.data['email'])
+            if not user.exists():
+                return JsonResponse(res_msg(400, '등록되지 않은 email 입니다.'))
             serializer = AuthTokenSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             token, _ = Token.objects.get_or_create(user=user)
