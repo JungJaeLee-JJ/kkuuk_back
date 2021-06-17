@@ -19,6 +19,8 @@ from kkuukApp import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/singup', views.Signup),
-    path('api/login',views.Login),
+    path('api/signup', views.signup),
+    path('api/login',views.login),
+    path('api/addclient', views.addClient),
+    #path('kkuuk/getclient', views.getClient),
 ]
