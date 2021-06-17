@@ -8,7 +8,7 @@
 ```
 	name: "커피", 
 	call: "01011112222", 
-	password: "1234", 
+	pwd: "1234", 
 	email: "coffee@gmail.com"
 ```
 * response

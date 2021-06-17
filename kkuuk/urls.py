@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/singup', views.Signup),
     path('api/login',views.Login),
+    path('api/duplicate',views.DuplicateCheck)
 ]
