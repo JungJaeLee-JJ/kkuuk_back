@@ -17,7 +17,7 @@ def Signup(request):
             store = Store.objects.create(
             email = request.POST['email'],
             call = request.POST['call'],
-            store_name = request.POST['name'],
+            name = request.POST['name'],
             pwd = request.POST['pwd'],
         )
         store.save()
@@ -41,6 +41,23 @@ def Login(request):
             if store.pwd == pwd :
                 return HttpResponse(res_msg('200', '로그인 되었습니다.'), status=200)
             return HttpResponse(res_msg(400, '비밀번호가 다릅니다.'), status=200)
+    except Exception as ex:
+        print(ex)
+        return HttpResponse(res_msg(500, '서버오류'), status=200)
+
+@csrf_exempt
+def DuplicateCheck(request):
+    try:
+        #GET
+        if request.method == 'GET':
+            return HttpResponse(res_msg(400, '잘못된 요청입니다.'),status=200)
+        elif request.method == 'POST':
+            email = request.POST['email']
+            store = Store.objects.filter(email=email)
+            if store.exists():
+                return HttpResponse(res_msg('200', '중복'), status=200)
+            return HttpResponse(res_msg('200', '신규'), status=200)
+
     except Exception as ex:
         print(ex)
         return HttpResponse(res_msg(500, '서버오류'), status=200)
