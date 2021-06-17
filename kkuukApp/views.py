@@ -31,7 +31,10 @@ class SignUp(APIView):
             call = request.data['call']
             email = request.data['email']
             user = Store.objects.create_user(username=username, password=password, email=email, call=call)
-            return JsonResponse(res_msg(200,'회원가입이 완료되었습니다.'))
+            serializer = AuthTokenSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            token, _ = Token.objects.get_or_create(user=user)
+            return JsonResponse(res_msg(200,'회원가입이 완료되었습니다.',{'token':token.key}))
         except Exception as e:
             print(e)
             return JsonResponse(res_msg(500, e.__str__()))
