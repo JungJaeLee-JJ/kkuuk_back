@@ -23,4 +23,5 @@ urlpatterns = [
     path('api/login',views.login),
     path('api/addclient', views.addClient),
     path('api/getclient', views.getClient),
+    path('api/duplicate',views.DuplicateCheck),
 ]

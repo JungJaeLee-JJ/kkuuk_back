@@ -9,6 +9,23 @@ def res_msg(code, msg, data={}) :
     print(code,msg)
     return json.dumps({'code':code, 'msg':msg , 'data':data},ensure_ascii=False)
 
+@csrf_exempt
+def DuplicateCheck(request):
+    try:
+        #GET
+        if request.method == 'GET':
+            return HttpResponse(res_msg(400, '잘못된 요청입니다.'),status=200)
+        elif request.method == 'POST':
+            email = request.POST['email']
+            store = Store.objects.filter(email=email)
+            if store.exists():
+                return HttpResponse(res_msg('200', '중복'), status=200)
+            return HttpResponse(res_msg('200', '신규'), status=200)
+
+    except Exception as ex:
+        print(ex)
+        return HttpResponse(res_msg(500, '서버오류'), status=200)
+
 # 매장 등록 함수
 @csrf_exempt
 def signup(request):
