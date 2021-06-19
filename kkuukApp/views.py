@@ -1,4 +1,4 @@
-from .models import Store, Client, MemberShip
+from .models import Store, Client, MemberShip, Histroy
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 # from django.views.decorators.csrf import csrf_exempt
@@ -63,7 +63,7 @@ class LogIn(APIView):
             serializer = AuthTokenSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             token, _ = Token.objects.get_or_create(user=store)
-            return JsonResponse(res_msg(200, '로그인에 성공하였습니다.',{'token':token.key}))
+            return JsonResponse(res_msg(200, '로그인에 성공하였습니다.',{'token':token.key,'email':email,'call':store.call,'username':store.username}))
         except Exception as e:
             print(e)
             return JsonResponse(res_msg(500, e.__str__()))
@@ -144,8 +144,22 @@ class AccStamp(APIView):
             if not memberships.exists():
                 return JsonResponse(res_msg(400, '등록되지 않은 멤버 입니다.'))
             membership = memberships[0]
+
+            # 히스토리 저장
+            trade_type = 'save' if val > 0 else 'use'
+            Histroy.objects.create(
+                trade_type = trade_type,
+                user = client,
+                store = store,
+                before_stamp = membership.stamp,
+                val_stamp = val,
+                after_stamp = membership.stamp + val
+            )
+
+            # 값 저장
             membership.stamp = membership.stamp + val
             membership.save()
+
             return JsonResponse(res_msg(200, '성공',{'stamp':membership.stamp}))
 
         except Exception as e:

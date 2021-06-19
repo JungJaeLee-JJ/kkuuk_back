@@ -33,6 +33,7 @@ class Histroy(models.Model):
         null=True,
     )
     user = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='user')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='store')
     trade_at = models.DateTimeField(auto_now_add=True)
     before_stamp = models.IntegerField(default=0)
     val_stamp = models.IntegerField(default=0)
