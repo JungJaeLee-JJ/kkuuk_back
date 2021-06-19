@@ -17,7 +17,6 @@ from rest_framework import mixins
 from rest_framework import generics
 from rest_framework.authtoken.views import ObtainAuthToken
 
-import json
 
 #response 메세지
 def res_msg(code, msg, data={}) :
@@ -118,6 +117,41 @@ class GetClient(APIView):
         except Exception as e:
             print(e)
             return JsonResponse(res_msg(500, e.__str__()))
+
+class AccStamp(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self, request):
+        try:
+            email = request.data['email']
+            digit = request.data['last_4_digit']
+            name = request.data['name']
+            val = int(request.data['val'])
+
+            # 가게 조회
+            stores = Store.objects.filter(email=email)
+            if not stores.exists():
+                return JsonResponse(res_msg(400, '등록되지 않은 email 입니다.'))
+            store = stores[0]
+            
+            # 고객 조회
+            clients = Client.objects.filter(Q(last_4_digit=digit)&Q(name=name))
+            if not clients.exists():
+                return JsonResponse(res_msg(400, '등록되지 않은 고객입니다.'))
+            client = clients[0]
+
+            # 멤버쉽 조회
+            memberships = MemberShip.objects.filter(Q(store=store)&Q(client_name=client))
+            if not memberships.exists():
+                return JsonResponse(res_msg(400, '등록되지 않은 멤버 입니다.'))
+            membership = memberships[0]
+            membership.stamp = membership.stamp + val
+            membership.save()
+            return JsonResponse(res_msg(200, '성공',{'stamp':membership.stamp}))
+
+        except Exception as e:
+            print(e)
+            return JsonResponse(res_msg(500, e.__str__()))
+
 
 
 # 고객 도장적립 함수
