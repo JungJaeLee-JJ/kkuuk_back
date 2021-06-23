@@ -69,6 +69,7 @@ class LogIn(APIView):
 
 class AddClient(APIView):
     permission_classes = (IsAuthenticated,)
+    @swagger_auto_schema(request_body=AddClientSerializer)
     def post(self, request):
         try:
             email = request.data['email']
