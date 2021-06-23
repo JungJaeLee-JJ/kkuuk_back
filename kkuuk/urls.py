@@ -16,8 +16,44 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from kkuukApp import views
+from django.conf.urls import url
+from drf_yasg.views import get_schema_view
+from rest_framework.permissions import AllowAny
+# from drf_yasg import openapi
+# from django.urls import path, include
+# from rest_framework.documentation import include_docs_urls
+from rest_framework_swagger.views import get_swagger_view
 
+schema_view = get_swagger_view(title='Pastebin API')
+
+# schema_view = get_swagger_view(title="My API")
+
+# schema_url_v1_patterns = [
+#     url(r'^v1/', include('kkuuk.urls', namespace='kkuuk_api')),
+# ]
+ 
+# schema_view_v1 = get_schema_view(
+#     openapi.Info(
+#         title="KKUUK Open API",
+#         default_version='v1',
+#         description="안녕하세요. 꾸욱의 Open API 문서 페이지 입니다.",
+#         terms_of_service="https://www.google.com/policies/terms/",
+#     ),
+#     validators=['flex'], #'ssv'],
+#     public=True,
+#     permission_classes=(AllowAny,),
+#     patterns=schema_url_v1_patterns,
+# )
+ 
 urlpatterns = [
+    url('api/docs', schema_view),
+    # url(r'^admin/', admin.site.urls),
+    # url(r'^v1/', include('kkuuk.urls', namespace='kkuuk_api')),
+ 
+    # # Auto DRF API docs
+    # url(r'^swagger(?P<format>\.json|\.yaml)/v1$', schema_view_v1.without_ui(cache_timeout=0), name='schema-json'),
+    # url(r'^swagger/v1/$', schema_view_v1.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    # url(r'^redoc/v1/$', schema_view_v1.with_ui('redoc', cache_timeout=0), name='schema-redoc-v1'),
     path('admin/', admin.site.urls),
     path('api/signup', views.SignUp.as_view()),
     path('api/login',views.LogIn.as_view()),
