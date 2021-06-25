@@ -160,12 +160,13 @@ class AccStamp(APIView):
             membership.stamp = membership.stamp + val
             membership.save()
 
-            return JsonResponse(res_msg(200, '성공',{'stamp':membership.stamp}))
+            return JsonResponse(res_msg(200, '성공',{'stamp':membership.stamp}, {'client':client.name}))
 
         except Exception as e:
             print(e)
             return JsonResponse(res_msg(500, e.__str__()))
 
+# 스탬프 적립, 사용 내역 조회 함수
 class StampHistory(APIView):
     permission_classes = (IsAuthenticated,)
     def post(self, request):
@@ -186,13 +187,13 @@ class StampHistory(APIView):
                 return JsonResponse(res_msg(400, '등록되지 않은 고객입니다.'))
             client = clients[0]
 
-            # 멤버쉽 조회
-            memberships = MemberShip.objects.filter(Q(store=store)&Q(client_name=client))
-            if not memberships.exists():
-                return JsonResponse(res_msg(400, '등록되지 않은 멤버 입니다.'))
-            membership = memberships[0]
-            data = []
-            data.append({'before_stamp':membership.befor_stamp, 'val_stamp':membership.val_stamp, 'after_stamp':membership.after_stamp})
+            # 히스토리 조회
+            history = Histroy.objects.filter(Q(store=store)&Q(user=client))
+            if not history.exists():
+                return JsonResponse(res_msg(400, '적립 또는 사용 내역이 없습니다'))
+            for h in history :
+                data = []
+                data.append({'날짜':h.trade_at, '이전 스탬프 개수':h.befor_stamp, '적립/사용 개수':h.val_stamp, '현재 스탬프 개수':h.after_stamp})
             return JsonResponse(res_msg(200, '조회 완료',data))
         except Exception as e:
             print(e)
