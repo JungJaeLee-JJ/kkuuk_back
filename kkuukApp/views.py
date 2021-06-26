@@ -80,13 +80,7 @@ class DuplicateCheck(APIView):
         type=openapi.TYPE_STRING
     )
 
-    store_field = openapi.Parameter(
-        'store',
-        openapi.IN_QUERY,
-        description='상호명',
-        type=openapi.TYPE_STRING
-    )
-    @swagger_auto_schema(manual_parameters=[email_field,store_field])
+    @swagger_auto_schema(manual_parameters=[email_field])
     def post(self, request):
         try:
             email = request.data['email']
@@ -100,28 +94,20 @@ class DuplicateCheck(APIView):
 
 class LogIn(APIView):
 
-    # email_field = openapi.Parameter(
-    #     'email',
-    #     openapi.IN_QUERY,
-    #     description='이메일',
-    #     type=openapi.TYPE_STRING
-    # )
-    
-    # password_field = openapi.Parameter(
-    #     'password',
-    #     openapi.IN_QUERY,
-    #     description='비밀번호',
-    #     type=openapi.TYPE_STRING
-    # )
+    email_field = openapi.Parameter(
+        'email',
+        openapi.IN_QUERY,
+        description='이메일',
+        type=openapi.TYPE_STRING
+    )
 
-    # store_field = openapi.Parameter(
-    #     'email',
-    #     openapi.IN_QUERY,
-    #     description='이메일',
-    #     type=openapi.TYPE_STRING
-    # )
-
-    # @swagger_auto_schema(manual_parameters=[store_field, email_field, password_field])
+    password_field = openapi.Parameter(
+        'password',
+        openapi.IN_QUERY,
+        description='비밀번호',
+        type=openapi.TYPE_STRING
+    )
+    @swagger_auto_schema(manual_parameters=[email_field, password_field])
     def post(self, request):
         try:
             email = request.data['email']
@@ -141,6 +127,29 @@ class LogIn(APIView):
 
 class AddClient(APIView):
     permission_classes = (IsAuthenticated,)
+
+    email_field = openapi.Parameter(
+        'email',
+        openapi.IN_QUERY,
+        description='가게 이메일',
+        type=openapi.TYPE_STRING
+    )
+
+    name_field = openapi.Parameter(
+        'name',
+        openapi.IN_QUERY,
+        description='고객 이름',
+        type=openapi.TYPE_STRING
+    )
+
+    digit_field = openapi.Parameter(
+        'last_4_digit',
+        openapi.IN_QUERY,
+        description='고객 전화번호 뒷자리',
+        type=openapi.TYPE_STRING
+    )
+
+    @swagger_auto_schema(manual_parameters=[email_field, name_field, digit_field])
     def post(self, request):
         try:
             email = request.data['email']
@@ -171,6 +180,22 @@ class AddClient(APIView):
 
 class GetClient(APIView):
     permission_classes = (IsAuthenticated,)
+
+    name_field = openapi.Parameter(
+        'name',
+        openapi.IN_QUERY,
+        description='고객 이름',
+        type=openapi.TYPE_STRING
+    )
+
+    digit_field = openapi.Parameter(
+        'last_4_digit',
+        openapi.IN_QUERY,
+        description='고객 전화번호 뒷자리',
+        type=openapi.TYPE_STRING
+    )
+
+    @swagger_auto_schema(manual_parameters=[name_field, digit_field])
     def post(self, request):
         try:
             digit = request.data['last_4_digit']
@@ -191,6 +216,36 @@ class GetClient(APIView):
 
 class AccStamp(APIView):
     permission_classes = (IsAuthenticated,)
+
+    email_field = openapi.Parameter(
+        'email',
+        openapi.IN_QUERY,
+        description='가게 이메일',
+        type=openapi.TYPE_STRING
+    )
+
+    name_field = openapi.Parameter(
+        'name',
+        openapi.IN_QUERY,
+        description='고객 이름',
+        type=openapi.TYPE_STRING
+    )
+
+    digit_field = openapi.Parameter(
+        'last_4_digit',
+        openapi.IN_QUERY,
+        description='고객 전화번호 뒷자리',
+        type=openapi.TYPE_STRING
+    )
+
+    val_field = openapi.Parameter(
+        'val',
+        openapi.IN_QUERY,
+        description='적립/사용 도장 개수',
+        type=openapi.TYPE_INTEGER
+    )
+
+    @swagger_auto_schema(manual_parameters=[email_field, name_field, digit_field, val_field])
     def post(self, request):
         try:
             email = request.data['email']
@@ -240,6 +295,29 @@ class AccStamp(APIView):
 # 스탬프 적립, 사용 내역 조회 함수
 class StampHistory(APIView):
     permission_classes = (IsAuthenticated,)
+
+    email_field = openapi.Parameter(
+        'email',
+        openapi.IN_QUERY,
+        description='가게 이메일',
+        type=openapi.TYPE_STRING
+    )
+
+    name_field = openapi.Parameter(
+        'name',
+        openapi.IN_QUERY,
+        description='고객 이름',
+        type=openapi.TYPE_STRING
+    )
+
+    digit_field = openapi.Parameter(
+        'last_4_digit',
+        openapi.IN_QUERY,
+        description='고객 전화번호 뒷자리',
+        type=openapi.TYPE_STRING
+    )
+
+    @swagger_auto_schema(manual_parameters=[email_field, name_field, digit_field])
     def post(self, request):
         try:
             email = request.data['email']
@@ -260,7 +338,7 @@ class StampHistory(APIView):
 
             # 히스토리 조회
             history = Histroy.objects.filter(Q(store=store)&Q(user=client))
-                data = []
+            data = []
             for h in history :
                 data.append({'날짜':h.trade_at, 'before_stamp':h.before_stamp, 'val_stamp':h.val_stamp, '현재 스탬프 개수':h.after_stamp})
             return JsonResponse(res_msg(200, '조회 완료',data))
