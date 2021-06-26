@@ -15,3 +15,9 @@ from kkuukApp.models import Store,Client,Histroy,MemberShip
 #     class Meta:
 #         model = Histroy
 #         fields = ['name','last_4_digit']
+
+class Client(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(null=True, max_length=255)
+    last_4_digit = models.CharField(null=True, max_length=4)
+    created_at = models.DateTimeField(auto_now_add=True)
