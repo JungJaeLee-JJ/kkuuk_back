@@ -205,7 +205,7 @@ class GetClient(APIView):
             if clients.exists() and store.exists() :
                 data = []
                 for client in clients:
-                    membership = MemberShip.objects.filter(Q(store = store[0]) & Q( client_digit = client))
+                    membership = MemberShip.objects.filter(Q(store = store[0]) & Q( client_name = client))
                     if membership.exists():
                         data.append({'name':client.name,'stamp':membership[0].stamp})
                 return JsonResponse(res_msg(200, '조회 완료',data))
