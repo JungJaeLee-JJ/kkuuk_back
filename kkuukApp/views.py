@@ -16,12 +16,46 @@ from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import mixins
 from rest_framework import generics
 from rest_framework.authtoken.views import ObtainAuthToken
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 
 #response 메세지
 def res_msg(code, msg, data={}) :
     return {'code':code, 'msg':msg , 'data':data}
 
+
 class SignUp(APIView):
+    #swagger parameter
+    user_field = openapi.Parameter(
+        'username',
+        openapi.IN_QUERY,
+        description='상호명',
+        type=openapi.TYPE_STRING
+        )
+    
+    password_field = openapi.Parameter(
+        'password',
+        openapi.IN_QUERY,
+        description='비밀번호',
+        type=openapi.TYPE_STRING
+    )
+
+    call_field = openapi.Parameter(
+        'call',
+        openapi.IN_QUERY,
+        description='전화번호',
+        type=openapi.TYPE_STRING
+    )
+
+    email_field = openapi.Parameter(
+        'email',
+        openapi.IN_QUERY,
+        description='이메일',
+        type=openapi.TYPE_STRING
+    )
+
+    @swagger_auto_schema(manual_parameters=[user_field, password_field, call_field, email_field])
     def post(self, request, format=None):
         try:
             username = request.data['username']
@@ -38,6 +72,21 @@ class SignUp(APIView):
             return JsonResponse(res_msg(500, e.__str__()))
 
 class DuplicateCheck(APIView):
+
+    email_field = openapi.Parameter(
+        'email',
+        openapi.IN_QUERY,
+        description='이메일',
+        type=openapi.TYPE_STRING
+    )
+
+    store_field = openapi.Parameter(
+        'store',
+        openapi.IN_QUERY,
+        description='상호명',
+        type=openapi.TYPE_STRING
+    )
+    @swagger_auto_schema(manual_parameters=[email_field,store_field])
     def post(self, request):
         try:
             email = request.data['email']
@@ -50,6 +99,29 @@ class DuplicateCheck(APIView):
             return JsonResponse(res_msg(500, e.__str__()))
 
 class LogIn(APIView):
+
+    # email_field = openapi.Parameter(
+    #     'email',
+    #     openapi.IN_QUERY,
+    #     description='이메일',
+    #     type=openapi.TYPE_STRING
+    # )
+    
+    # password_field = openapi.Parameter(
+    #     'password',
+    #     openapi.IN_QUERY,
+    #     description='비밀번호',
+    #     type=openapi.TYPE_STRING
+    # )
+
+    # store_field = openapi.Parameter(
+    #     'email',
+    #     openapi.IN_QUERY,
+    #     description='이메일',
+    #     type=openapi.TYPE_STRING
+    # )
+
+    # @swagger_auto_schema(manual_parameters=[store_field, email_field, password_field])
     def post(self, request):
         try:
             email = request.data['email']
@@ -69,7 +141,6 @@ class LogIn(APIView):
 
 class AddClient(APIView):
     permission_classes = (IsAuthenticated,)
-    @swagger_auto_schema(request_body=AddClientSerializer)
     def post(self, request):
         try:
             email = request.data['email']
@@ -189,11 +260,9 @@ class StampHistory(APIView):
 
             # 히스토리 조회
             history = Histroy.objects.filter(Q(store=store)&Q(user=client))
-            if not history.exists():
-                return JsonResponse(res_msg(400, '적립 또는 사용 내역이 없습니다'))
-            for h in history :
                 data = []
-                data.append({'날짜':h.trade_at, '이전 스탬프 개수':h.befor_stamp, '적립/사용 개수':h.val_stamp, '현재 스탬프 개수':h.after_stamp})
+            for h in history :
+                data.append({'날짜':h.trade_at, 'before_stamp':h.before_stamp, 'val_stamp':h.val_stamp, '현재 스탬프 개수':h.after_stamp})
             return JsonResponse(res_msg(200, '조회 완료',data))
         except Exception as e:
             print(e)
