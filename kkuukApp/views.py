@@ -405,21 +405,3 @@ class Stamp(APIView):
         except Exception as e:
             print(e)
             return JsonResponse(res_msg(500, e.__str__()))
-
-# 고객 도장적립 함수
-# @csrf_exempt
-# def membership(request) :
-#     try :
-#         #Get
-#         if request.method == 'GET' :
-#             return HttpResponse(res_msg(400, '잘못된 요청입니다.'),status=200)
-#         #Post
-#         elif request.method == 'POST' :
-#             if # 테이블에 뒷자리가 
-#             membership = Membership.objects.create(
-#                 # 음 뭘 써야되지 ?_? 
-#             )
-#             membership.save()
-#     except Exception as ex :
-#         print(ex)
-#         return HttpResponse(res_msg(500, '서버오류'), status=200)
