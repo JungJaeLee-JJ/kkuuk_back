@@ -293,7 +293,7 @@ class AccStamp(APIView):
             membership.stamp = membership.stamp + val
             membership.save()
 
-            return JsonResponse(res_msg(200, '성공',{'stamp':membership.stamp}, {'client':client.name}))
+            return JsonResponse(res_msg(200, '성공',{'stamp':membership.stamp, 'client':client.name}))
 
         except Exception as e:
             print(e)
@@ -347,8 +347,61 @@ class StampHistory(APIView):
             history = Histroy.objects.filter(Q(store=store)&Q(user=client))
             data = []
             for h in history :
-                data.append({'날짜':h.trade_at, 'before_stamp':h.before_stamp, 'val_stamp':h.val_stamp, '현재 스탬프 개수':h.after_stamp})
+                data.append({'날짜':h.trade_at, 'before_stamp':h.before_stamp, 'val_stamp':h.val_stamp, 'after_stamp':h.after_stamp})
             return JsonResponse(res_msg(200, '조회 완료',data))
+        except Exception as e:
+            print(e)
+            return JsonResponse(res_msg(500, e.__str__()))
+
+class Stamp(APIView):
+
+    email_field = openapi.Parameter(
+        'email',
+        openapi.IN_QUERY,
+        description='가게 이메일',
+        type=openapi.TYPE_STRING
+    )
+
+    name_field = openapi.Parameter(
+        'name',
+        openapi.IN_QUERY,
+        description='고객 이름',
+        type=openapi.TYPE_STRING
+    )
+
+    digit_field = openapi.Parameter(
+        'last_4_digit',
+        openapi.IN_QUERY,
+        description='고객 전화번호 뒷자리',
+        type=openapi.TYPE_STRING
+    )
+    @swagger_auto_schema(manual_parameters=[email_field, name_field, digit_field])
+    def post(self, request):
+        try:
+            email = request.data['email']
+            digit = request.data['last_4_digit']
+            name = request.data['name']
+
+            # 가게 조회
+            stores = Store.objects.filter(email=email)
+            if not stores.exists():
+                return JsonResponse(res_msg(400, '등록되지 않은 email 입니다.'))
+            store = stores[0]
+            
+            # 고객 조회
+            clients = Client.objects.filter(Q(last_4_digit=digit)&Q(name=name))
+            if not clients.exists():
+                return JsonResponse(res_msg(400, '등록되지 않은 고객입니다.'))
+            client = clients[0]
+
+            # 멤버쉽 조회
+            memberships = MemberShip.objects.filter(Q(store=store)&Q(client=client))
+            if not memberships.exists():
+                return JsonResponse(res_msg(400, '등록되지 않은 멤버 입니다.'))
+            membership = memberships[0]
+
+            return JsonResponse(res_msg(200, '성공',{'stamp':membership.stamp}))
+
         except Exception as e:
             print(e)
             return JsonResponse(res_msg(500, e.__str__()))
