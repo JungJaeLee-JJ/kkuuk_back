@@ -34,4 +34,6 @@ urlpatterns = [
     path('api/getclient', views.GetClient.as_view()),
     path('api/duplicate',views.DuplicateCheck.as_view()),
     path('api/accstamp',views.AccStamp.as_view()),
+    path('api/stamphistory',views.StampHistory.as_view()),
+    path('api/stamp',views.Stamp.as_view()),
 ]
