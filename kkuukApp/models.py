@@ -42,5 +42,5 @@ class Histroy(models.Model):
 
 class MemberShip(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE)
-    client_name = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
     stamp = models.IntegerField(default=0)

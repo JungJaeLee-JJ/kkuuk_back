@@ -1,3 +1,4 @@
+# from _typeshed import StrOrBytesPath
 from .models import Store, Client, MemberShip, Histroy
 from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
@@ -152,27 +153,33 @@ class AddClient(APIView):
     @swagger_auto_schema(manual_parameters=[email_field, name_field, digit_field])
     def post(self, request):
         try:
+            #가게 정보 가져오기
             email = request.data['email']
-            store_email = Store.objects.get(email=email)
+            store = Store.objects.get(email=email)
             #고객 이름, 뒷자리 가져오기
             name = request.data['name']
             last_4_digit = request.data['last_4_digit']
             check = Client.objects.filter(Q(name=name) & Q(last_4_digit=last_4_digit))
-            if check.exists() : #(중복) 이미 가입된 회원
-                return JsonResponse(res_msg(200, '이미 가입된 고객입니다.'))
-            
+            if check.exists() :
+                client = check[0]
+                check2 = MemberShip.objects.filter(Q(store=store) & Q(client=client))
+                if check2.exists():
+                    return JsonResponse(res_msg(200, '이미 가입된 고객입니다.'))
+                else:
+                    MemberShip.objects.create(
+                    store = store,
+                    client = client
+                    )
             # 고객 등록하기
             client = Client.objects.create(
                 name = request.POST['name'],
                 last_4_digit = request.POST['last_4_digit'],
             )
-         
             #고객 멤버쉽 생성
             MemberShip.objects.create(
-                store = store_email,
-                client_name = client
+                store = store,
+                client = client
             )
-
             return JsonResponse(res_msg(200, '고객 등록이 완료 되었습니다.'))
         except Exception as e:
             print(e)
@@ -266,7 +273,7 @@ class AccStamp(APIView):
             client = clients[0]
 
             # 멤버쉽 조회
-            memberships = MemberShip.objects.filter(Q(store=store)&Q(client_name=client))
+            memberships = MemberShip.objects.filter(Q(store=store)&Q(client=client))
             if not memberships.exists():
                 return JsonResponse(res_msg(400, '등록되지 않은 멤버 입니다.'))
             membership = memberships[0]
