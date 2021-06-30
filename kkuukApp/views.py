@@ -175,7 +175,7 @@ class AddClient(APIView):
                 name = request.POST['name'],
                 last_4_digit = request.POST['last_4_digit'],
             )
-            #고객 멤버쉽 생성
+            #고객 멤버십 생성
             MemberShip.objects.create(
                 store = store,
                 client = client
@@ -212,7 +212,7 @@ class GetClient(APIView):
             if clients.exists() and store.exists() :
                 data = []
                 for client in clients:
-                    membership = MemberShip.objects.filter(Q(store = store[0]) & Q( client_name = client))
+                    membership = MemberShip.objects.filter(Q(store = store[0]) & Q( client = client))
                     if membership.exists():
                         data.append({'name':client.name,'stamp':membership[0].stamp})
                 return JsonResponse(res_msg(200, '조회 완료',data))
@@ -347,7 +347,7 @@ class StampHistory(APIView):
             history = Histroy.objects.filter(Q(store=store)&Q(user=client))
             data = []
             for h in history :
-                data.append({'날짜':h.trade_at, 'before_stamp':h.before_stamp, 'val_stamp':h.val_stamp, 'after_stamp':h.after_stamp})
+                data.append({'trade_at':h.trade_at, 'before_stamp':h.before_stamp, 'val_stamp':h.val_stamp, 'after_stamp':h.after_stamp})
             return JsonResponse(res_msg(200, '조회 완료',data))
         except Exception as e:
             print(e)

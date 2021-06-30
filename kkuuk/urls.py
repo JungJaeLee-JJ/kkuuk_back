@@ -11,9 +11,9 @@ from rest_framework.permissions import AllowAny
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="KKUUK의 API", # 타이틀
+        title="'꾸욱'의 API", # 타이틀
         default_version='v1', # 버전
-        description="매장을 위한 고객 적립 서비스 '꾸욱'입니다.", # 설명
+        description="매장을 위한 쿠폰 적립 서비스 '꾸욱'입니다.", # 설명
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="cathyshim222@naver.com"),
         license=openapi.License(name="꾸욱"),
