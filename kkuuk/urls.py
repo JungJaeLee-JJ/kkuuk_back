@@ -36,4 +36,5 @@ urlpatterns = [
     path('api/accstamp',views.AccStamp.as_view()),
     path('api/stamphistory',views.StampHistory.as_view()),
     path('api/stamp',views.Stamp.as_view()),
+    path('api/allclient',views.AllClient.as_view()),
 ]
