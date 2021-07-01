@@ -409,6 +409,14 @@ class Stamp(APIView):
 class AllClient(APIView):
     permission_classes = (IsAuthenticated,)
 
+    email_field = openapi.Parameter(
+        'email',
+        openapi.IN_QUERY,
+        description='가게 이메일',
+        type=openapi.TYPE_STRING
+    )
+    
+    @swagger_auto_schema(manual_parameters=[email_field])
     def post(self, request):
         try:
             email = request.data['email']
