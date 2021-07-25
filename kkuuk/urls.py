@@ -37,4 +37,6 @@ urlpatterns = [
     path('api/stamphistory',views.StampHistory.as_view()),
     path('api/stamp',views.Stamp.as_view()),
     path('api/allclient',views.AllClient.as_view()),
+    path('api/deleteclient',views.DeleteClient.as_view()),
+    path('api/storeinfo',views.StoreInfo.as_view()),
 ]
