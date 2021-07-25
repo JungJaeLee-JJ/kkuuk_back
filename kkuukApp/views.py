@@ -415,7 +415,7 @@ class AllClient(APIView):
         description='가게 이메일',
         type=openapi.TYPE_STRING
     )
-    
+
     @swagger_auto_schema(manual_parameters=[email_field])
     def post(self, request):
         try:
@@ -432,6 +432,49 @@ class AllClient(APIView):
                 history = Histroy.objects.filter(user=membership.client).order_by('-trade_at')
                 data.append({'client':membership.client.name, 'stamp':membership.stamp, 'date':history[0].trade_at})
             return JsonResponse(res_msg(200, '조회 완료',data))
+        except Exception as e:
+            print(e)
+            return JsonResponse(res_msg(500, e.__str__()))
+
+class DeleteClient(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            email = request.data['email']
+            digit = request.data['last_4_digit']
+            name = request.data['name']
+            # 가게 조회
+            stores = Store.objects.filter(email=email)
+            if not stores.exists():
+                return JsonResponse(res_msg(400, '등록되지 않은 email 입니다.'))
+            store = stores[0]
+
+            # 고객 조회
+            clients = Client.objects.filter(Q(last_4_digit=digit)&Q(name=name))
+            if not clients.exists():
+                return JsonResponse(res_msg(400, '등록되지 않은 고객입니다.'))
+            client = clients[0]
+
+            client.delete()
+            return JsonResponse(res_msg(200, '고객 삭제가 완료 되었습니다.'))
+        except Exception as e:
+            print(e)
+            return JsonResponse(res_msg(500, e.__str__()))
+
+            #문제점 : 고객을 지우면 다른 가게의 가입정보도 지워짐 -> 해결해야됨
+
+class StoreInfo(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self, request):
+        try:
+            email = request.data['email']
+            stores = Store.objects.filter(email=email)
+            if not stores.exists():
+                return JsonResponse(res_msg(400, '등록되지 않은 email 입니다.'))
+            store = stores[0]
+            return JsonResponse(res_msg(200, '성공',{'name':store.username, 'email':store.email, 'password':store.password,'id':store.id}))
+
         except Exception as e:
             print(e)
             return JsonResponse(res_msg(500, e.__str__()))
