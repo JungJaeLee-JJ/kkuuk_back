@@ -466,13 +466,9 @@ class DeleteClient(APIView):
 
 class StoreInfo(APIView):
     permission_classes = (IsAuthenticated,)
-    def post(self, request):
+    def get(self, request):
         try:
-            email = request.data['email']
-            stores = Store.objects.filter(email=email)
-            if not stores.exists():
-                return JsonResponse(res_msg(400, '등록되지 않은 email 입니다.'))
-            store = stores[0]
+            store = Token.objects.get(key=request.auth).user
             return JsonResponse(res_msg(200, '성공',{'name':store.username, 'email':store.email, 'password':store.password,'id':store.id}))
 
         except Exception as e:
