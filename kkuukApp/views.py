@@ -429,8 +429,12 @@ class AllClient(APIView):
             memberships = MemberShip.objects.filter(store=store)
             data = []
             for membership in memberships :
-                history = Histroy.objects.filter(user=membership.client).order_by('-trade_at')
-                data.append({'client':membership.client.name, 'stamp':membership.stamp, 'date':history[0].trade_at})
+                try:
+                    history = Histroy.objects.filter(user=membership.client).order_by('-trade_at')
+                    last_date = history[0].trade_at
+                except IndexError:
+                    last_date = None
+                data.append({'client':membership.client.name, 'stamp':membership.stamp, 'date':last_date})
             return JsonResponse(res_msg(200, '조회 완료',data))
         except Exception as e:
             print(e)
