@@ -448,11 +448,11 @@ class DeleteClient(APIView):
             email = request.data['email']
             digit = request.data['last_4_digit']
             name = request.data['name']
-            # 가게 조회
-            stores = Store.objects.filter(email=email)
-            if not stores.exists():
-                return JsonResponse(res_msg(400, '등록되지 않은 email 입니다.'))
-            store = stores[0]
+            # # 가게 조회
+            # stores = Store.objects.filter(email=email)
+            # if not stores.exists():
+            #     return JsonResponse(res_msg(400, '등록되지 않은 email 입니다.'))
+            # store = stores[0]
 
             # 고객 조회
             clients = Client.objects.filter(Q(last_4_digit=digit)&Q(name=name))
@@ -460,7 +460,11 @@ class DeleteClient(APIView):
                 return JsonResponse(res_msg(400, '등록되지 않은 고객입니다.'))
             client = clients[0]
 
-            client.delete()
+            memberships = MemberShip.objects.filter(Q(client=client))
+            if not memberships.exists():
+                return JsonResponse(res_msg(400, '가입된 멤버쉽이 없습니다.'))
+            membership = memberships[0]
+            membership.delete()
             return JsonResponse(res_msg(200, '고객 삭제가 완료 되었습니다.'))
         except Exception as e:
             print(e)
